@@ -1,0 +1,62 @@
+/** Main app hub routes — no layout back button on exact match */
+export const APP_HUB_ROUTES = new Set([
+  '/dashboard',
+  '/ventures',
+  '/domains',
+  '/cocreation',
+  '/community',
+  '/auctions',
+  '/purchases',
+  '/admin',
+  '/notifications',
+  '/meetings',
+  '/fee-requests',
+  '/cobrother-dashboard',
+]);
+
+/** Pages that already render their own back control in content */
+const PAGE_OWN_BACK = [
+  /^\/domains\/dashboard$/,
+  /^\/cocreation\/dashboard$/,
+  /^\/ventures\/dashboard$/,
+  /^\/auction\//,
+  /^\/venture-auction\//,
+  /^\/community-auction\//,
+  /^\/software-auction/,
+  /^\/ventures\/analytics$/,
+  /^\/cocreation\/[^/]+\/analytics$/,
+];
+
+const BACK_RULES = [
+  { test: (p) => p.startsWith('/ventures'), to: '/ventures', label: 'Ventures' },
+  { test: (p) => p.startsWith('/venture-auction'), to: '/auctions', label: 'Auctions' },
+  { test: (p) => p.startsWith('/domains'), to: '/domains', label: 'Domains' },
+  { test: (p) => p.startsWith('/auction/'), to: '/auctions', label: 'Auctions' },
+  { test: (p) => p.startsWith('/cocreation'), to: '/cocreation', label: 'Technology' },
+  { test: (p) => p.startsWith('/software-auction'), to: '/cocreation', label: 'Technology' },
+  { test: (p) => p.startsWith('/community-auction'), to: '/auctions', label: 'Auctions' },
+  { test: (p) => p.startsWith('/community'), to: '/community', label: 'Disruptors' },
+  { test: (p) => p.startsWith('/admin'), to: '/admin', label: 'Admin' },
+  { test: (p) => p.startsWith('/purchases'), to: '/purchases', label: 'Purchases' },
+  { test: (p) => p.startsWith('/fee-requests'), to: '/fee-requests', label: 'Fee requests' },
+  { test: (p) => p.startsWith('/meetings'), to: '/meetings', label: 'Meetings' },
+  { test: (p) => p.startsWith('/notifications'), to: '/notifications', label: 'Notifications' },
+  { test: (p) => p.startsWith('/cobrother'), to: '/cobrother-dashboard', label: 'CoBrother' },
+  { test: (p) => p.startsWith('/dashboard'), to: '/dashboard', label: 'Dashboard' },
+];
+
+export function getAppBackTarget(pathname) {
+  if (APP_HUB_ROUTES.has(pathname)) return null;
+  if (PAGE_OWN_BACK.some((rx) => rx.test(pathname))) return null;
+
+  for (const rule of BACK_RULES) {
+    if (rule.test(pathname)) {
+      return { to: rule.to, label: `Back to ${rule.label}` };
+    }
+  }
+  return null;
+}
+
+export function shouldShowAppLayoutBack(pathname) {
+  return getAppBackTarget(pathname) !== null;
+}

@@ -1,0 +1,35 @@
+import { useState } from 'react';
+import HomeTopNavActions from './HomeTopNavActions';
+
+export default function TopNavbar({ homeMobileMenu = false }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const stackedWithMainNav = Boolean(homeMobileMenu);
+
+  return (
+    <div
+      className={`home-top-nav sticky top-0 z-[1001] w-full min-w-0 border-b border-blue-200/80 bg-gradient-to-r from-sky-50 via-blue-50 to-cyan-50 font-body shadow-[inset_0_-1px_0_rgba(59,130,246,0.08)] ${
+        stackedWithMainNav ? 'home-top-nav-stacked' : 'home-top-nav-standalone'
+      }`}
+    >
+      <div className="home-top-nav-inner">
+        <div className="home-top-nav-actions">
+          <HomeTopNavActions />
+        </div>
+      </div>
+
+      {homeMobileMenu && mobileMenuOpen && (
+        <div className="absolute inset-x-0 top-full border-b border-blue-100 bg-gradient-to-b from-sky-50 to-blue-50/95 px-4 py-3 md:hidden">
+          <div className="flex w-full flex-col gap-2">
+            <a
+              href="/"
+              className="rounded px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-blue-100/80"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Home
+            </a>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

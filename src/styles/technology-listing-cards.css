@@ -1,0 +1,38 @@
+/* Technology listing — fix glow clipping, keep hover identical */
+
+.technology-listing-grid {
+  overflow: visible;
+  padding: 12px 4px;
+}
+
+.technology-listing-card-shell {
+  overflow: visible;
+  padding: 8px;
+}
+
+.technology-listing-card.card-glow-hover,
+.technology-listing-card.card-glow-hover:hover {
+  overflow: visible;
+  border: none !important;
+  outline: none !important;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+.technology-listing-card.card-glow-hover::before,
+.technology-listing-card.card-glow-hover:hover::before {
+  content: none;
+  display: none;
+  opacity: 0;
+}
+
+.technology-listing-card.card-glow-hover:hover {
+  box-shadow:
+    -14px 0 28px rgba(20, 184, 165, 0.447),
+    0 0 20px rgba(20, 184, 166, 0.12),
+    14px 0 28px rgba(59, 131, 246, 0.392),
+    0 10px 28px rgba(0, 0, 0, 0.13);
+  background-color: rgba(255, 255, 255, 1);
+}

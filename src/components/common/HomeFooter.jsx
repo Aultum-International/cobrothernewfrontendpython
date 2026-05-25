@@ -1,0 +1,380 @@
+import { Link, useNavigate } from 'react-router-dom';
+
+import { useTranslation } from 'react-i18next';
+
+import { useCookieConsent } from '../../context/CookieConsentContext';
+
+import { FaWhatsapp } from 'react-icons/fa';
+
+import coBrotherLogo from '../../assets/Cobrother_Green.png';
+
+
+
+const XIcon = () => (
+
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-4 w-4 sm:h-5 sm:w-5">
+
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+
+  </svg>
+
+);
+
+
+
+const InstagramIcon = () => (
+
+  <svg
+
+    viewBox="0 0 24 24"
+
+    fill="none"
+
+    stroke="currentColor"
+
+    strokeWidth="2"
+
+    strokeLinecap="round"
+
+    strokeLinejoin="round"
+
+    aria-hidden="true"
+
+    className="h-4 w-4 sm:h-5 sm:w-5"
+
+  >
+
+    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+
+    <circle cx="12" cy="12" r="4" />
+
+    <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+
+  </svg>
+
+);
+
+
+
+const FacebookIcon = () => (
+
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-4 w-4 sm:h-5 sm:w-5">
+
+    <path d="M24 12.073C24 5.404 18.629 0 12 0S0 5.404 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.313 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" />
+
+  </svg>
+
+);
+
+
+
+const LinkedinIcon = () => (
+
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-4 w-4 sm:h-5 sm:w-5">
+
+    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+
+  </svg>
+
+);
+
+
+
+const YoutubeIcon = () => (
+
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-4 w-4 sm:h-5 sm:w-5">
+
+    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+
+  </svg>
+
+);
+
+
+
+const WhatsappIcon = () => (
+
+  <FaWhatsapp className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
+
+);
+
+
+
+const WHATSAPP_HREF = 'https://wa.me/919876543210';
+
+
+
+const socials = [
+
+  { href: 'https://x.com/CoBrother141506', label: 'X', Icon: XIcon },
+
+  { href: 'https://www.instagram.com/cobrother__?igsh=bXE3YnR4dDJ6NnVi', label: 'Instagram', Icon: InstagramIcon },
+
+  { href: 'https://www.facebook.com/share/16vjEWTjHi/', label: 'Facebook', Icon: FacebookIcon },
+
+  { href: 'https://www.linkedin.com/in/co-brother-9921b03aa', label: 'LinkedIn', Icon: LinkedinIcon },
+
+  { href: 'https://www.youtube.com/channel/UCPq5njZ3e63myDvzfcoSDEQ', label: 'YouTube', Icon: YoutubeIcon },
+
+  { href: WHATSAPP_HREF, label: 'WhatsApp', Icon: WhatsappIcon },
+
+];
+
+
+
+const socialHoverStyles = {
+
+  X: 'hover:border-slate-400 hover:text-slate-800 hover:bg-slate-50 hover:shadow-[0_6px_20px_rgba(100,116,139,0.18)]',
+
+  Instagram: 'hover:border-pink-300 hover:text-pink-600 hover:bg-pink-50/90 hover:shadow-[0_6px_20px_rgba(236,72,153,0.2)]',
+
+  Facebook: 'hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50/90 hover:shadow-[0_6px_20px_rgba(59,130,246,0.2)]',
+
+  LinkedIn: 'hover:border-sky-400 hover:text-sky-700 hover:bg-sky-50/90 hover:shadow-[0_6px_20px_rgba(14,165,233,0.2)]',
+
+  YouTube: 'hover:border-red-300 hover:text-red-600 hover:bg-red-50/90 hover:shadow-[0_6px_20px_rgba(239,68,68,0.18)]',
+
+  WhatsApp: 'hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50/90 hover:shadow-[0_6px_20px_rgba(16,185,129,0.2)]',
+
+};
+
+
+
+const linkClass =
+
+  'block py-1.5 text-sm text-slate-600 no-underline transition-all duration-200 hover:translate-x-0.5 hover:text-indigo-700 visited:text-slate-600';
+
+const scrollToTop = () => {
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+};
+
+
+
+const ScrollLink = ({ to, children, className }) => {
+
+  const navigate = useNavigate();
+
+  const handleClick = (e) => {
+
+    e.preventDefault();
+
+    navigate(to);
+
+    scrollToTop();
+
+  };
+
+  return (
+
+    <a href={to} onClick={handleClick} className={className}>
+
+      {children}
+
+    </a>
+
+  );
+
+};
+
+
+
+const headingClass =
+
+  'relative mb-4 pb-3 text-xs font-semibold uppercase tracking-wider text-indigo-950/90 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-14 after:rounded-full after:bg-gradient-to-r after:from-blue-500 after:via-indigo-500 after:to-violet-500 after:shadow-[0_0_12px_rgba(99,102,241,0.35)] after:content-[""] sm:after:w-16';
+
+
+
+export default function HomeFooter() {
+
+  const { t } = useTranslation();
+
+  const { openPreferences } = useCookieConsent();
+
+  const footerBody = (
+
+      <div className="relative w-full pb-6 pt-10 sm:pb-8 sm:pt-12 md:pt-14">
+
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10 md:grid-cols-4 md:gap-10 lg:grid-cols-12 lg:gap-8 xl:gap-12">
+
+          <div className="flex flex-col items-start justify-start sm:col-span-2 md:col-span-4 lg:col-span-4">
+
+            <Link to="/" className="group mb-4 inline-block">
+
+              <img
+
+                src={coBrotherLogo}
+
+                alt="CoBrother"
+
+                className="h-9 w-auto max-w-full opacity-95 transition-opacity group-hover:opacity-100 sm:h-10 md:h-11"
+
+              />
+
+            </Link>
+
+          </div>
+
+
+
+          <div className="md:col-span-1 lg:col-span-2">
+
+            <h3 className={headingClass}>{t('explore')}</h3>
+
+            <nav className="flex flex-col">
+
+              <button
+
+                type="button"
+
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+
+                className={`${linkClass} text-left`}
+
+              >
+
+                {t('Home')}
+
+              </button>
+
+            </nav>
+
+          </div>
+
+
+
+          <div className="md:col-span-1 lg:col-span-2">
+
+            <h3 className={headingClass}>{t('Company')}</h3>
+
+            <nav className="flex flex-col">
+
+              <ScrollLink to="/about" className={linkClass}>
+
+                {t('About Us')}
+
+              </ScrollLink>
+
+              <ScrollLink to="/contact" className={linkClass}>
+
+                {t('Contact Us')}
+
+              </ScrollLink>
+
+            </nav>
+
+          </div>
+
+
+
+          <div className="md:col-span-1 lg:col-span-2">
+
+            <h3 className={headingClass}>{t('legal')}</h3>
+
+            <nav className="flex flex-col">
+
+              <ScrollLink to="/privacy-policy" className={linkClass}>
+
+                {t('Privacy Policy')}
+
+              </ScrollLink>
+
+              <ScrollLink to="/terms-and-conditions" className={linkClass}>
+
+                {t('Terms & Conditions')}
+
+              </ScrollLink>
+
+              <button type="button" onClick={openPreferences} className={`${linkClass} text-left`}>
+
+                {t('cookieConsentFooterLink')}
+
+              </button>
+
+            </nav>
+
+          </div>
+
+
+
+          <div className="flex flex-col sm:col-span-2 md:col-span-1 lg:col-span-2">
+
+            <h3 className={headingClass}>{t('Show us some love')}</h3>
+
+            <div className="flex flex-wrap gap-2 sm:gap-2.5">
+
+              {socials.map(({ href, label, Icon }) => (
+
+                <a
+
+                  key={label}
+
+                  href={href}
+
+                  target="_blank"
+
+                  rel="noopener noreferrer"
+
+                  aria-label={label}
+
+                  className={`flex h-9 w-9 items-center justify-center rounded-full border border-indigo-200/70 bg-white/95 text-slate-500 shadow-[0_2px_14px_rgba(99,102,241,0.1)] transition-all duration-200 hover:-translate-y-0.5 sm:h-10 sm:w-10 ${socialHoverStyles[label]}`}
+
+                >
+
+                  <Icon />
+
+                </a>
+
+              ))}
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <div className="mt-10 border-t border-indigo-200/50 pt-5 text-center sm:mt-12 sm:pt-6 sm:text-left">
+
+          <p className="text-xs text-slate-600 sm:text-sm">
+
+            {t('Copyright © {{year}} CoBrother™ All rights reserved.  ', {
+
+              year: new Date().getFullYear(),
+
+            })}
+
+          </p>
+
+        </div>
+
+      </div>
+  );
+
+  return (
+
+    <footer className="home-footer-theme relative mt-auto overflow-hidden border-t border-indigo-200/60 bg-gradient-to-b from-slate-50 via-white to-indigo-50/70 text-slate-700">
+
+      <div
+
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_20%_0%,rgba(59,130,246,0.08),transparent_55%),radial-gradient(ellipse_70%_50%_at_85%_20%,rgba(139,92,246,0.07),transparent_50%)]"
+
+        aria-hidden
+
+      />
+
+      <div className="pointer-events-none absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-indigo-400/70 to-transparent" />
+
+      <div className="home-hero-align-outer">
+        <div className="home-hero-align-inner">{footerBody}</div>
+      </div>
+
+    </footer>
+
+  );
+
+}
+
+

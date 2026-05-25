@@ -1,0 +1,252 @@
+import { useState } from 'react';
+import { domainAPI } from '../api/services';
+
+const METHODS = [
+  {
+    id: 'DNS_TXT',
+    label: 'DNS TXT Record',
+    icon: '🌐',
+    desc: 'Most reliable. Add a TXT record to your DNS. Works for all domains.',
+    badge: 'Recommended',
+    badgeColor: '#6ec896',
+  },
+  {
+    id: 'META_TAG',
+    label: 'HTML Meta Tag / File',
+    icon: '🏷',
+    desc: 'Quick. Add a meta tag to your homepage or upload a verification file.',
+    badge: 'Fastest',
+    badgeColor: '#c8a96e',
+  },
+  {
+    id: 'WHOIS_EMAIL',
+    label: 'WHOIS Email',
+    icon: '📧',
+    desc: 'Receive a code at the registered owner email from WHOIS records.',
+    badge: 'Easy',
+    badgeColor: '#6eadc8',
+  },
+];
+
+export default function DomainVerificationModal({ domain, onClose, onVerified }) {
+  const [step, setStep]           = useState('choose');   // choose | instructions | check | done
+  const [method, setMethod]       = useState(null);
+  const [instructions, setInstructions] = useState(null);
+  const [otpCode, setOtpCode]     = useState('');
+  const [loading, setLoading]     = useState(false);
+  const [checkResult, setCheckResult]   = useState(null);
+  const [error, setError]         = useState('');
+
+  const fullDomain = domain.domainName + domain.domainExtension;
+
+  // ── Step 1: Init ────────────────────────────────────────────────────────────
+  const handleInit = async (selectedMethod) => {
+    setLoading(true); setError('');
+    try {
+      const { data } = await domainAPI.verifyInit(domain.id, selectedMethod);
+      setMethod(selectedMethod);
+      setInstructions(data);
+      setStep('instructions');
+    } catch (err) {
+      setError(err.response?.data?.error || err.response?.data || 'Failed to initiate verification.');
+    } finally { setLoading(false); }
+  };
+
+  // ── Step 2: Check ───────────────────────────────────────────────────────────
+  const handleCheck = async () => {
+    setLoading(true); setError(''); setCheckResult(null);
+    try {
+      const { data } = await domainAPI.verifyCheck(
+        domain.id,
+        method === 'WHOIS_EMAIL' ? otpCode : null
+      );
+      setCheckResult(data);
+      if (data.verified) {
+        setStep('done');
+        onVerified();
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Verification check failed.');
+    } finally { setLoading(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="relative w-full max-w-[560px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] animate-slideUp">
+        <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-purple-100/30 blur-3xl pointer-events-none" />
+        <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors duration-200 hover:text-gray-700" onClick={onClose}>✕</button>
+
+        {/* ── Choose method ── */}
+        {step === 'choose' && (
+          <>
+            <div className="relative z-10 p-8 pb-6">
+              <div className="inline-block px-3 py-1 bg-purple-50 text-purple-600 text-xs font-bold rounded-full border border-purple-200 mb-3">Domain Verification</div>
+              <h2 className="font-display text-2xl font-semibold text-gray-900 m-0 mb-2">{fullDomain}</h2>
+              <p className="text-gray-500 text-sm">Prove you own this domain to get a verified badge on your listing.</p>
+            </div>
+
+            <div className="relative z-10 px-8 pb-8 flex flex-col gap-3">
+              {METHODS.map(m => (
+                <div key={m.id}
+                  onClick={() => !loading && handleInit(m.id)}
+                  className={`p-4 rounded-[10px] border border-gray-200 bg-gray-50 transition-all duration-150 hover:bg-gray-50 hover:border-gray-400 ${loading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                >
+                  <div className="flex items-center gap-3 mb-1">
+                    <span className="text-xl">{m.icon}</span>
+                    <span className="font-semibold text-gray-900 text-sm">{m.label}</span>
+                    <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded" style={{ color: m.badgeColor, background: `${m.badgeColor}18`, border: `1px solid ${m.badgeColor}33` }}>
+                      {m.badge}
+                    </span>
+                  </div>
+                  <p className="m-0 text-xs text-gray-500 pl-8">{m.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {error && <div className="p-3 bg-red-100 border border-red-200 rounded-lg text-sm text-red-600">{error}</div>}
+            {loading && <div className="text-center text-gray-500 text-sm">
+              <span className="inline-block w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin mr-2" />
+              Initiating verification…
+            </div>}
+          </>
+        )}
+
+        {/* ── Instructions ── */}
+        {step === 'instructions' && instructions && (
+          <>
+            <div className="relative z-10 p-8 pb-6">
+              <div className="inline-block px-3 py-1 bg-purple-50 text-purple-600 text-xs font-bold rounded-full border border-purple-200 mb-3">
+                {METHODS.find(m => m.id === method)?.icon} {METHODS.find(m => m.id === method)?.label}
+              </div>
+              <h2 className="font-display text-2xl font-semibold text-gray-900 m-0">Follow these steps</h2>
+            </div>
+
+            {/* Step-by-step instructions */}
+            <div className="relative z-10 px-8 flex flex-col gap-2.5">
+              {instructions.instructions?.map((line, i) => (
+                <div key={i} className="flex gap-3 items-start">
+                  <span className="w-[22px] h-[22px] rounded-full bg-purple-100 border border-purple-200 text-purple-600 text-xs font-bold flex-shrink-0 flex items-center justify-center">
+                    {i + 1}
+                  </span>
+                  <span className="text-xs text-gray-600 leading-relaxed">{line}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* DNS TXT copy box */}
+            {method === 'DNS_TXT' && (
+              <div className="relative z-10 px-8 mb-5">
+                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">TXT Record Value</div>
+                <CopyBox value={instructions.recordValue} />
+              </div>
+            )}
+
+            {/* Meta tag copy box */}
+            {method === 'META_TAG' && (
+              <div className="relative z-10 px-8 mb-5 flex flex-col gap-3">
+                <div>
+                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Meta Tag</div>
+                  <CopyBox value={instructions.metaTag} mono />
+                </div>
+                <div>
+                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">OR — File Path & Content</div>
+                  <div className="text-sm text-gray-500 mb-1">
+                    Upload to: <code className="text-purple-600">{instructions.filePath}</code>
+                  </div>
+                  <CopyBox value={instructions.fileContent} />
+                </div>
+              </div>
+            )}
+
+            {/* WHOIS email OTP input */}
+            {method === 'WHOIS_EMAIL' && (
+              <div className="relative z-10 px-8 mb-5">
+                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Enter Verification Code</div>
+                <p className="text-sm text-gray-500 mb-3">
+                  Sent to: <strong className="text-purple-600">{instructions.maskedEmail}</strong>
+                </p>
+                <input
+                  value={otpCode}
+                  onChange={e => setOtpCode(e.target.value.toUpperCase())}
+                  placeholder="Enter 6-digit code"
+                  maxLength={6}
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-colors tracking-[0.3em] text-lg text-center"
+                />
+              </div>
+            )}
+
+            {checkResult && !checkResult.verified && (
+              <div className="relative z-10 px-8 mb-4">
+                <div className="p-3.5 bg-red-500/8 border border-red-500/25 rounded-lg text-xs text-red-400">
+                  {checkResult.message}
+                </div>
+              </div>
+            )}
+
+            {error && <div className="relative z-10 px-8 mb-4"><div className="p-3 bg-red-100 border border-red-200 rounded-lg text-sm text-red-600">{error}</div></div>}
+
+            <div className="relative z-10 px-8 pb-8 flex gap-3">
+              <button className="btn-glow flex-1 flex items-center justify-center gap-2" onClick={handleCheck} disabled={loading}>
+                {loading
+                  ? <><span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin" /> Checking…</>
+                  : method === 'WHOIS_EMAIL' ? 'Verify Code →' : 'Check Verification →'
+                }
+              </button>
+              <button className="btn-glow" onClick={() => { setStep('choose'); setCheckResult(null); setError(''); }}>
+                ← Back
+              </button>
+            </div>
+
+            {method !== 'WHOIS_EMAIL' && (
+              <p className="relative z-10 px-8 pb-8 text-xs text-gray-600 text-center">
+                {method === 'DNS_TXT'
+                  ? 'DNS changes can take a few minutes to propagate. If it fails, wait 5 mins and try again.'
+                  : 'Make sure your website is publicly accessible before checking.'}
+              </p>
+            )}
+          </>
+        )}
+
+        {/* ── Success ── */}
+        {step === 'done' && (
+          <div className="relative z-10 p-8 text-center">
+            <div className="text-5xl mb-4">✅</div>
+            <h2 className="font-display text-[1.75rem] font-semibold mb-2">
+              Domain Verified!
+            </h2>
+            <p className="text-gray-500 mb-6">
+              <strong className="text-green-600">{fullDomain}</strong> is now verified.
+              Your listing shows a verified badge to buyers.
+            </p>
+            <button className="btn-glow w-full" onClick={onClose}>Done</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Copy box component ────────────────────────────────────────────────────────
+function CopyBox({ value, mono }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <div className="flex items-center gap-2 bg-gray-100 border border-gray-200 rounded-lg px-4 py-3">
+      <code className={`flex-1 text-purple-600 break-all font-mono ${mono ? 'text-xs' : 'text-sm'}`}>
+        {value}
+      </code>
+      <button onClick={handleCopy}
+        className={`px-2.5 py-1.5 rounded-md cursor-pointer text-xs whitespace-nowrap transition-all duration-200 ${
+          copied
+            ? 'bg-green-100 border border-green-300 text-green-600'
+            : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'
+        }`}>
+        {copied ? '✓ Copied' : 'Copy'}
+      </button>
+    </div>
+  );
+}

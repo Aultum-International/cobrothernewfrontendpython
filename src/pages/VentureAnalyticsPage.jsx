@@ -1,0 +1,293 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend
+} from 'recharts';
+import { analyticsAPI } from '../api/services';
+import { unwrapApiData } from '../api/unwrap';
+import AppLayout from '../components/layout/AppLayout';
+import { mapVenturesForUi } from '../utils/venturePayload';
+
+const COLORS = ['#c8a96e', '#6ec896', '#6e9ec8', '#c86e6e', '#a78bfa', '#f472b6', '#fbbf24', '#34d399'];
+
+function safeEntries(record) {
+  if (record == null || typeof record !== 'object') return [];
+  return Object.entries(record);
+}
+
+function normalizeVentureAnalytics(payload) {
+  if (!payload || typeof payload !== 'object') return null;
+  return {
+    ventureId: payload.ventureId,
+    ventureName: payload.ventureName,
+    totalViews: payload.totalViews ?? 0,
+    totalApplications: payload.totalApplications ?? 0,
+    conversionRate: payload.conversionRate ?? 0,
+    avgHoursToApply: payload.avgHoursToApply ?? 0,
+    viewsByDay: payload.viewsByDay ?? {},
+    byIndustry: payload.byIndustry ?? {},
+    byRole: payload.byRole ?? {},
+    applicantSkills: payload.applicantSkills ?? {},
+    byStatus: payload.byStatus ?? {},
+  };
+}
+
+const StatCard = ({ label, value, sub, color = '#c8a96e' }) => (
+  <div className="card-glow-hover p-6 bg-white border border-gray-200 rounded-xl flex flex-col gap-1.5">
+    <div className="text-xs text-gray-600 font-semibold uppercase tracking-wider">{label}</div>
+    <div className="text-3xl font-bold font-mono" style={{ color }}>{value}</div>
+    {sub && <div className="text-sm text-gray-500">{sub}</div>}
+  </div>
+);
+
+const ChartCard = ({ title, children }) => (
+  <div className="p-6 bg-white/5 border border-white/10 rounded-xl">
+    <div className="text-sm font-semibold text-gray-300 mb-5">{title}</div>
+    {children}
+  </div>
+);
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-gray-900 border border-gray-700 rounded-lg px-3.5 py-2.5 text-xs">
+      <div className="text-gray-500 mb-1">{label}</div>
+      {payload.map((p, i) => (
+        <div key={i} style={{ color: p.color || '#c8a96e' }}>{p.name}: <strong>{p.value}</strong></div>
+      ))}
+    </div>
+  );
+};
+
+export default function VentureAnalyticsPage() {
+  const navigate = useNavigate();
+  const [ventures, setVentures]   = useState([]);
+  const [selected, setSelected]   = useState(null);
+  const [analytics, setAnalytics] = useState(null);
+  const [loading, setLoading]     = useState(false);
+  const [fetching, setFetching]   = useState(true);
+  const [error, setError]         = useState('');
+
+  useEffect(() => {
+    analyticsAPI.getMyVentures()
+      .then(({ data }) => {
+        const list = mapVenturesForUi(data);
+        setVentures(list);
+        if (list.length > 0) setSelected(list[0].id);
+      })
+      .catch(() => setError('Failed to load ventures.'))
+      .finally(() => setFetching(false));
+  }, []);
+
+  useEffect(() => {
+    if (!selected) return;
+    setLoading(true); setError('');
+    analyticsAPI.getVentureAnalytics(selected)
+      .then((res) => {
+        const payload = normalizeVentureAnalytics(unwrapApiData(res));
+        if (!payload) {
+          setAnalytics(null);
+          setError(res.data?.message || 'No analytics data for this venture.');
+          return;
+        }
+        setAnalytics(payload);
+      })
+      .catch(() => setError('Failed to load analytics.'))
+      .finally(() => setLoading(false));
+  }, [selected]);
+
+  const viewsData = analytics
+    ? safeEntries(analytics.viewsByDay).map(([date, count]) => ({ date, Views: count }))
+    : [];
+
+  const industryData = analytics
+    ? safeEntries(analytics.byIndustry).map(([name, value]) => ({ name: name.replace(/_/g, ' '), value }))
+    : [];
+
+  const roleData = analytics
+    ? safeEntries(analytics.byRole).map(([name, value]) => ({ name: name.replace(/_/g, ' '), value }))
+    : [];
+
+  const skillsData = analytics
+    ? safeEntries(analytics.applicantSkills)
+        .sort((a, b) => b[1] - a[1]).slice(0, 8)
+        .map(([name, value]) => ({ name, value }))
+    : [];
+
+  const statusData = analytics
+    ? safeEntries(analytics.byStatus).map(([name, value]) => ({ name, value }))
+    : [];
+
+  return (
+    <AppLayout>
+<div className="flex items-start justify-between mb-6">
+  <div>
+    <h1 className="font-display text-4xl font-bold text-gray-900 m-0">
+      Venture Analytics
+    </h1>
+
+    <p className="text-gray-600 mt-1 font-medium">
+      Track performance and applicant insights for your ventures.
+    </p>
+  </div>
+
+  <button
+    className="btn-glow btn-glow-sm"
+    onClick={() => navigate('/ventures')}
+  >
+    ← Back
+  </button>
+</div>
+
+
+        {/* Venture selector */}
+        {!fetching && ventures.length > 0 && (
+          <div className="mb-8 flex gap-2 flex-wrap">
+            {ventures.map(v => (
+              <button
+                key={v.id}
+                onClick={() => setSelected(v.id)}
+                className={`btn-glow btn-glow-sm ${
+                  selected === v.id
+                    ? 'bg-gray-900 text-white border-gray-900'
+                    : ''
+                }`}
+              >
+                {v.brandDetails?.brandName || `Venture #${v.id}`}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {fetching || loading ? (
+          <div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" /></div>
+        ) : error ? (
+          <div className="p-4 bg-red-100 border border-red-200 rounded-lg text-sm text-red-600">{error}</div>
+        ) : !analytics ? null : (
+          <div className="flex flex-col gap-6">
+
+            {/* Stat cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard label="Total Views" value={analytics.totalViews} sub="All time" />
+              <StatCard label="Applications" value={analytics.totalApplications} sub="All time" color="#6ec896" />
+              <StatCard label="Conversion Rate" value={`${analytics.conversionRate}%`} sub="Views → Applications" color="#6e9ec8" />
+              <StatCard label="Avg Time to Apply" value={`${analytics.avgHoursToApply}h`} sub="After first view" color="#c86e6e" />
+            </div>
+
+            {/* Views over time */}
+            <ChartCard title="👁 Views Over Last 30 Days">
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={viewsData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <XAxis dataKey="date" tick={{ fill: '#666', fontSize: 11 }}
+                    tickFormatter={v => v.split(' ')[1] ? v : v} interval={4} />
+                  <YAxis tick={{ fill: '#666', fontSize: 11 }} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Line type="monotone" dataKey="Views" stroke="#c8a96e" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            {/* Two column: industry + role */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ChartCard title="🏭 Viewer Industries">
+                {industryData.length === 0 ? (
+                  <div className="text-gray-600 text-sm text-center py-8">No data yet</div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={220}>
+                    <PieChart>
+                      <Pie data={industryData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false} fontSize={11}>
+                        {industryData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
+              </ChartCard>
+
+              <ChartCard title="👤 Viewer Roles">
+                {roleData.length === 0 ? (
+                  <div className="text-gray-600 text-sm text-center py-8">No data yet</div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={roleData} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+                      <XAxis type="number" tick={{ fill: '#666', fontSize: 11 }} allowDecimals={false} />
+                      <YAxis type="category" dataKey="name" tick={{ fill: '#a0a0b0', fontSize: 11 }} width={90} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="value" fill="#6e9ec8" radius={[0, 4, 4, 0]} name="Viewers" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </ChartCard>
+            </div>
+
+            {/* Applicant skills */}
+            <ChartCard title="🛠 Top Applicant Skills">
+              {skillsData.length === 0 ? (
+                <div className="text-gray-600 text-sm text-center py-8">No applicants yet</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={skillsData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                    <XAxis dataKey="name" tick={{ fill: '#a0a0b0', fontSize: 11 }} />
+                    <YAxis tick={{ fill: '#666', fontSize: 11 }} allowDecimals={false} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="value" name="Applicants" radius={[4, 4, 0, 0]}>
+                      {skillsData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </ChartCard>
+
+            {/* Application status */}
+            <ChartCard title="📋 Application Status Breakdown">
+              {statusData.length === 0 ? (
+                <div className="text-gray-600 text-sm text-center py-8">No applications yet</div>
+              ) : (
+                <div className="flex gap-4 flex-wrap">
+                  {statusData.map((s, i) => {
+                    const meta = { PENDING: { color: '#c8a96e', bg: 'rgba(200,169,110,0.12)' }, APPROVED: { color: '#6ec896', bg: 'rgba(110,200,150,0.12)' }, REJECTED: { color: '#c86e6e', bg: 'rgba(200,110,110,0.12)' } };
+                    const m = meta[s.name] || { color: '#c8a96e', bg: 'rgba(200,169,110,0.12)' };
+                    return (
+                      <div key={i} className="px-6 py-4 rounded-[10px] min-w-[120px] text-center" style={{ background: m.bg }}>
+                        <div className="text-[1.75rem] font-bold font-mono" style={{ color: m.color }}>{s.value}</div>
+                        <div className="text-sm text-gray-500 mt-1">{s.name}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </ChartCard>
+
+          </div>
+        )}
+{!fetching && ventures.length === 0 && (
+  <div className="flex items-center justify-center h-[75vh]">
+    <div className="text-center">
+      <div className="text-6xl mb-4">📊</div>
+
+      <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
+        No ventures listed yet
+      </h3>
+
+      <p className="text-gray-600 mb-6">
+        List a venture to start tracking analytics.
+      </p>
+
+      <button
+        className="btn-glow"
+        onClick={() => navigate('/ventures/new')}
+      >
+        List a Venture
+      </button>
+    </div>
+  </div>
+)}
+
+
+</AppLayout>
+);
+}

@@ -1,0 +1,119 @@
+/* ═══════════════════════════════════════════════════════
+   Professional UI Enhancements
+   ═══════════════════════════════════════════════════════ */
+
+/* Professional Button Styles - Purple Border with Hover Fill */
+.btn-professional {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem 1.5rem;
+  border: 2px solid #9440dd;
+  background: transparent;
+  color: #9440dd;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.btn-professional:hover {
+  background: #9440dd;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(148, 64, 221, 0.3);
+}
+
+.btn-professional-sm {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.8125rem;
+  border: 2px solid #9440dd;
+  background: transparent;
+  color: #9440dd;
+  font-weight: 600;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+}
+
+.btn-professional-sm:hover {
+  background: #9440dd;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(148, 64, 221, 0.25);
+}
+
+.btn-professional-lg {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  border: 2px solid #9440dd;
+  background: transparent;
+  color: #9440dd;
+  font-weight: 700;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+}
+
+.btn-professional-lg:hover {
+  background: #9440dd;
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(148, 64, 221, 0.35);
+}
+
+/* Card Hover Effect - Premium Glowing Border */
+.card-glow-hover {
+  transition: box-shadow 0.35s ease, border-color 0.35s ease, background 0.35s ease;
+  position: relative;
+}
+
+.card-glow-hover::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 108%;
+  height: 108%;
+  background: radial-gradient(ellipse 10% 90% at 0% 50%, rgba(20, 184, 166, 0.4) 0%, rgba(20, 184, 166, 0.18) 20%, transparent 45%), 
+              radial-gradient(ellipse 100% 18% at 100% 50%, rgba(59, 130, 246, 0.4) 0%, rgba(59, 130, 246, 0.18) 20%, transparent 45%);
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  z-index: -1;
+}
+
+.card-glow-hover:hover::before {
+  opacity: 1;
+}
+
+.card-glow-hover:hover {
+  /* Slightly increased edge glow */
+  box-shadow: 
+    /* Left green */
+    -14px 0 28px rgba(20, 184, 165, 0.447),
+    /* Center light */
+    0 0 20px rgba(20, 184, 166, 0.12),
+    /* Right blue */
+    14px 0 28px rgba(59, 131, 246, 0.392),
+    /* Depth */
+    0 10px 28px rgba(0, 0, 0, 0.13),
+    /* Inner */
+    inset 0 0 14px rgba(20, 184, 166, 0.06);
+  
+  border-color: rgba(20, 184, 166, 0.32);
+  background-color: rgba(255, 255, 255, 1);
+}
+
+/* Apply to all card variations */
+.card.card-glow-hover:hover,
+.venture-card.card-glow-hover:hover,
+.community-card.card-glow-hover:hover,
+.dash-card.card-glow-hover:hover {
+  box-shadow: 
+    0 0 14px rgba(20, 184, 166, 0.12),
+    0 0 24px rgba(20, 184, 166, 0.1),
+    0 0 34px rgba(59, 130, 246, 0.07),
+    0 8px 20px rgba(0, 0, 0, 0.11),
+    inset 0 0 12px rgba(20, 184, 166, 0.05);
+  border-color: rgba(20, 184, 166, 0.28);
+}
