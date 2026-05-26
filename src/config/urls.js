@@ -1,10 +1,10 @@
 /**
  * API / backend origin resolution.
  *
- * Local dev: set VITE_API_URL=http://127.0.0.1:8000 in .env.local
- * Production: https://backend.cobrother.com
+ * Local dev: set VITE_API_URL in .env.local (defaults to Render backend below).
+ * Production / Vercel: set VITE_API_URL=https://cobrotherpythonbackend-1.onrender.com
  */
-export const PRODUCTION_API_ORIGIN = 'https://backend.cobrother.com';
+export const PRODUCTION_API_ORIGIN = 'https://cobrotherpythonbackend-1.onrender.com';
 export const PRODUCTION_APP_URL = 'https://cobrother.com';
 
 const LOCAL_API_ORIGIN = 'http://127.0.0.1:8000';
